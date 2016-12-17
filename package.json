@@ -1,0 +1,29 @@
+{
+  "name": "freeports-srv",
+  "version": "0.0.0",
+  "description": "Find out which UDP ports are not blocked, the server end",
+  "scripts": {
+    "test": "echo 'no tests'",
+    "start": "node server.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/cjdelisle/freeports-srv.git"
+  },
+  "keywords": [
+    "port",
+    "firewall",
+    "wifi",
+    "hotel",
+    "blocked"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/cjdelisle/freeports-srv/issues"
+  },
+  "homepage": "https://github.com/cjdelisle/freeports-srv#readme",
+  "dependencies": {
+    "pcap": "git+https://github.com/mranney/node_pcap.git#d920204745c8b00ef4b7a3fe27d902b263cdb70f"
+  }
+}
