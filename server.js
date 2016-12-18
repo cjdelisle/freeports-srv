@@ -1,4 +1,6 @@
+'use strict';
 const PCap = require("pcap");
+const NetChecksum = require('netchecksum');
 
 // UDP packets with the content 'FREEPORT'
 const MATCHER = "udp and udp[8:4] = 0x46524545 and udp[12:4] = 0x504f5254 and udp[4:2] = 0x0010";
@@ -15,31 +17,41 @@ const reply = (pktBin, session) => {
     const udpSrc = pktBin.slice(i, i += 2);
     const udpDst = pktBin.slice(i, i += 2);
     const udpLen = pktBin.slice(i, i += 2);
-    const udpCsum = pktBin.slice(i, i += 2); //*/ i += 2 // csum is unused...
+
+    //const udpCsum = pktBin.slice(i, i += 2);
+    i += 2 // csum is unused...
+
     const content = pktBin.slice(i, i += 8);
 
     if (udpLen.toString('hex') !== '0010') { throw new Error(); }
     if (content.toString('utf8') !== 'FREEPORT') { throw new Error(); }
 
-    // clear the ip checksum
-    ipHdr[10] = 0;
-    ipHdr[11] = 0;
+
+    // flip src and dest ip addresses
+    const ipFullHdr = Buffer.concat([ipHdr, ipDst, ipSrc]);
 
     // bring up the TTL back to 64
-    ipHdr[8] = 64;
+    ipFullHdr[8] = 64;
+
+    // recalc the ip checksum
+    ipFullHdr[10] = 0;
+    ipFullHdr[11] = 0;
+    ipFullHdr.writeUInt16BE(NetChecksum.raw(ipFullHdr), 10);
+
+    const replyContent = new Buffer("PORTFREE");
+
+    const udpCsum = new Buffer(2);
+    udpCsum.writeUInt16BE(NetChecksum.udp4(ipDst, ipSrc, udpDst, udpSrc, replyContent));
 
     const newPkt = Buffer.concat([
         ethSrc, ethDst, ethertype, // flip src and dest ether addresses
-
-        ipHdr, ipDst, ipSrc, // flip src and dest ip addresses
-
-        udpDst, udpSrc, udpLen, new Buffer([0,0]), // flip src and dest udp ports and zero csum.
-
-        new Buffer("PORTFREE")
+        ipFullHdr,
+        udpDst, udpSrc, udpLen, udpCsum, // flip src and dest udp ports.
+        replyContent
     ]);
 
     session.inject(newPkt);
-}
+};
 
 const main = (argv) => {
     let device;
