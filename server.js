@@ -62,7 +62,8 @@ const main = (argv) => {
         const packet = PCap.decode.packet(raw);
         const ip = packet.payload.payload;
         const udp = ip.payload;
-        console.log(ip.saddr.addr.join('.') + ':' + udp.sport);
+        console.log(ip.saddr.addr.join('.') + ':' + udp.sport + ' -> ' +
+            ip.daddr.addr.join('.') + ':' + udp.dport);
 
         reply(raw.buf, sess);
     });

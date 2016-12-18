@@ -1,6 +1,6 @@
 {
   "name": "freeports-srv",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Find out which UDP ports are not blocked, the server end",
   "scripts": {
     "test": "echo 'no tests'",
